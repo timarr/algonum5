@@ -1,7 +1,7 @@
 import numpy as np
 import re #regexp
 import matplotlib.pyplot as plt
-import load as ld
+import load_foil as ld
 
 
 def display(ex, ey, ix, iy):
@@ -10,9 +10,6 @@ def display(ex, ey, ix, iy):
     plt.show()
 
 
-(ex,ey,ix,iy) = ld.load_foil("airfoils/b29root.dat")
-#display(ex, ey, ix, iy)
-print(ex.data)
-print(ey)
-print(ix)
-print(iy)
+(dim, ex,ey,ix,iy) = ld.load_foil("airfoils/b29root.dat")
+display(ex, ey, ix, iy)
+
