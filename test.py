@@ -39,7 +39,7 @@ def display_slices(ex, f_lambdas, ix, g_lambdas, n):
         plot_funct(ix, g, n)
     plt.show()
 
-
+    
 (dim, ex,ey,ix,iy) = ld.load_foil("airfoils/b29root.dat")
 #display(ex, ey, ix, iy)
 
