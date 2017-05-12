@@ -5,11 +5,13 @@ import load_foil as ld
 import interpolation as inter
 import curves
 
+#Displays the plot describing the original wing
 def display(ex, ey, ix, iy):
     plt.plot(ex, ey, linewidth = 1.0)
     plt.plot(ix, iy, linewidth = 1.0)
     plt.show()
 
+#Generates the plot x->f(x)
 def plot_funct(x, f_x, n):
     x_t = np.empty(0)
     for i in range(0, x.size - 1):
@@ -22,15 +24,15 @@ def plot_funct(x, f_x, n):
         y[i] = f_x(x_t[i])
 
     plt.plot(x_t, y) 
-    
 
+#Displays the interpolated points of given curves    
 def display_interpole(ex, f_ex, ix, f_ix, n):
     plot_funct(ex, f_ex, n)
     plot_funct(ix, f_ix, n)
     plt.show()
 
 
-
+#Displays all the curves disposed around the wing modeling the airflow
 def display_slices(ex, f_lambdas, ix, g_lambdas, n):
     for f in f_lambdas:
         plot_funct(ex, f, n)
@@ -42,12 +44,12 @@ def display_slices(ex, f_lambdas, ix, g_lambdas, n):
 
     
 (dim, ex,ey,ix,iy) = ld.load_foil("airfoils/b29root.dat")
-display(ex, ey, ix, iy)
+#display(ex, ey, ix, iy)
 
 number_points = 10
 f = inter.interpolation(ex, ey)
 g = inter.interpolation(ix, iy)
-display_interpole(ex, f, ix, g, number_points)
+#display_interpole(ex, f, ix, g, number_points)
 
 n_curves = 10
 h_max_e = curves.find_farrest_point(ey)
