@@ -3,7 +3,8 @@ import interpolation as inter
 import load_foil as ld
 import matplotlib.pyplot as plt
 
-def interpolation_derivee_result(x, x_array, y_array, n, y_sec, i):
+#Function which give the derivative
+def interpolation_derivative_result(x, x_array, y_array, n, y_sec, i):
     if (i == n - 1):
         return y_array[n - 1]
     k = x_array[i + 1] - x_array[i]
@@ -14,14 +15,18 @@ def interpolation_derivee_result(x, x_array, y_array, n, y_sec, i):
     inter_dx = inter_dx + (k * y_sec[i+1] / 6) * (3 * z**2 - 1)
     return inter_dx
 
-def interpolation_derivee(x_array, y_array):
+#Function which give the derivative of the interpolation 
+def interpolation_derivative(x_array, y_array):
     n = x_array.size
     A = inter.create_matrix_A(x_array, n)
     B = inter.create_matrix_B(x_array, y_array, n)
     y_sec = inter.solve_linear_equations(A, B, n - 2)
     f = (lambda x: np.sqrt(1+ interpolation_derivee_result(x, x_array, y_array, n, y_sec, inter.dichotomic_search(x, x_array, 0, n))**2))
     return f
-                        
+
+#------------------------------------------------------------------
+#Functions implemented but not used because they are not efficient enough
+
 def rectangle_method(f, n, a, b):
     h = (b - a) / n
     z = 0
@@ -30,18 +35,25 @@ def rectangle_method(f, n, a, b):
     return h*z
 
 
-def trapezoidal_rule(f, n, a, b):
-    h = (b - a) / n
-    z = 0.5 * (f(a) + f(b))
-    for i in range(1,n) :
-        z = z + f(a+i*h)
-    return h*z
-
 def pt_middle_method(f, n, a, b):
     h = (b - a) / n
     z = 0
     for i in range (n):
         z = z + f(((a+i*h) + (a+(i+1)*h)) /2) 
+    return h*z
+
+#------------------------------------------------------------------
+#Functions implemented and used for the test in the file test_integration.py
+#which give the integral using the different methods and take :
+# -the function f to integrate
+# -an interval [a, b]
+# -the number of subdivisions
+
+def trapezoidal_rule(f, n, a, b):
+    h = (b - a) / n
+    z = 0.5 * (f(a) + f(b))
+    for i in range(1,n) :
+        z = z + f(a+i*h)
     return h*z
 
 
@@ -73,30 +85,6 @@ def Romberg_method(f, a, b, n):
     return I[n-1, n-1]
 
 
-def test_int_meth(dim, ex,ey,ix,iy):
-    f_dev = interpolation_derivee(ex, ey)
-    n = 80
-    t = np.zeros(n)
-    r = np.zeros(n)
-    s = np.zeros(n)
-    p = np.zeros(n)
-    for i in range (1 ,n+1):
-        r[i-1] = rectangle_method(f_dev, i, 0, 10)
-        t[i-1] = trapezoidal_rule(f_dev, i, 0, 10)
-        p[i-1] = Romberg_method(f_dev, i, 0, 10)
-        s[i-1] = Simpson_rule(f_dev, i, 0, 10)
-
-    plt.plot(r, label='rectangle')
-    plt.plot(t, label='Trapezoidal Rule')
-    plt.plot(p, label='Romberg Method')
-    plt.plot(s, label='Simpson Rule')
-
-    plt.legend()
-    plt.show()
-
-(dim, ex,ey,ix,iy) = ld.load_foil("airfoils/b29root.dat")
-
-
 def Legendre(r, x):
     p0 = 1
     p1 = x
@@ -112,12 +100,15 @@ def Legendre_der(r, x):
     return ((r + 1) / (1 - x**2)) * (x * pr - pr1)
 
 
+#Returns the lambda-expression for the Legendre polynomial
 def lambda_Legendre(r):
     return (lambda x: Legendre(r, x))
 
+#Returns the lambda-expression for the derivate of Legendre polynomial
 def lambda_Legendre_der(r):
     return (lambda x: Legendre_der(r, x))
 
+#Returns the coefficient of the i nth Legendre polynomial
 def coefficient_Legendre(i):
     if (i == 0):
         return (np.array([1]))
@@ -153,7 +144,8 @@ def coefficient_Legendre(i):
         return np.array([46189/256, 0, -109395/256, 0, 90090/256, 0, -30030/256, 0, 3465/256, 0, -63/256])
 
 
-def poids_legendre(r, n):
+#Returns the weight list of each terms of a polynomial 
+def weight_legendre(r, n):
     lld = lambda_Legendre_der(n)
     w = np.zeros(np.size(r))
     for i in range (np.size(r)):
@@ -162,50 +154,10 @@ def poids_legendre(r, n):
 
 def Gauss_Legendre(f, n, a, b):
     r =np.roots(coefficient_Legendre(n))
-    w = poids_legendre(r, n)
+    w = weight_legendre(r, n)
     I = 0
     h = (b - a) / 2
     for i in range (n):
         I = I + w[i] * f(h * r[i] + ((a+b)/2))
 
     return h * I
-
-
-print (Gauss_Legendre(interpolation_derivee(ex, ey), 10, -1, 1))
-print (trapezoidal_rule(interpolation_derivee(ex, ey), 1000, -1, 1))    
-print (Simpson_rule(interpolation_derivee(ex, ey), 1000, -1, 1))
-print (pt_middle_method(interpolation_derivee(ex, ey), 1000, -1, 1))
-print (Romberg_method(interpolation_derivee(ex, ey), -1, 1, 15))
-
-
-def integrale_racine_x(a, b):
-    return ((2/3)*b**(3/2) - (2/3)*a**(3/2))
-
-
-def test_convergence(a, b, n):
-    racine_x = lambda x: np.sqrt(x)
-    
-    t = np.zeros(n)
-    s = np.zeros(n)
-    p = np.zeros(n)
-    r = np.zeros(n)
-    g = np.zeros(n)
-    
-    for i in range (1 ,n+1):
-
-        t[i-1] = np.linalg.norm(trapezoidal_rule(racine_x, i, a, b) - (integrale_racine_x(a, b))) / np.linalg.norm(integrale_racine_x(a, b))
-        s[i-1] = np.linalg.norm(Simpson_rule(racine_x, i, a, b) - (integrale_racine_x(a, b))) / np.linalg.norm(integrale_racine_x(a, b))
-        r[i-1] = np.linalg.norm(Romberg_method(racine_x, a, b, i) - (integrale_racine_x(a, b))) / np.linalg.norm(integrale_racine_x(a, b))
-        g[i-1] = np.linalg.norm(Gauss_Legendre(racine_x, i, a, b) - (integrale_racine_x(a, b))) / np.linalg.norm(integrale_racine_x(a, b))
-        
-
-    plt.plot(t, label='Trapezoidal Rule')
-    plt.plot(s, label='Simpson Rule')
-    plt.plot(r, label='Romberg Method')
-    plt.plot(g, label='Gauss-Legendre')
-
-    plt.legend()
-    plt.show()
-
-
-test_convergence(0, 10, 10)   
