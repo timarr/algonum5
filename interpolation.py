@@ -1,5 +1,6 @@
 import numpy as np
 
+#Computes the matrix of the coordinates of the points of the first curve describing the plane's wing
 def create_matrix_A (x_array, n):
     n = x_array.size
     A = np.zeros((n - 2, n - 2))
@@ -13,7 +14,8 @@ def create_matrix_A (x_array, n):
         A[i - 1][i] = k[i] / 6 
     A[n - 3][n - 3] = k[n - 3] + k[n - 2]
     return A
-        
+
+#Same as before, for the second curve        
 def create_matrix_B (x_array, y_array, n):
     B = np.empty(n - 2) 
 
@@ -26,7 +28,7 @@ def create_matrix_B (x_array, y_array, n):
 
     return B
 
-
+#
 def solve_linear_equations(A, B, n):
     y_sec = np.empty(n + 2)
     y_sec[0] = 0
@@ -43,6 +45,7 @@ def solve_linear_equations(A, B, n):
         y_sec[i] = B[i - 1] - A[i - 1][i]* y_sec[i + 1]
     return y_sec
 
+#Proceeds to the dichotomic research of x in an array (from start to end). x_array is sorted.
 def dichotomic_search (x, x_array, start, end):
     if(end - start <= 1):
         return start
@@ -54,9 +57,11 @@ def dichotomic_search (x, x_array, start, end):
     else:
         return index
 
+#Returns zeta(x)
 def zeta(x, x_array, i):
     return (x - x_array[i])/(x_array[i + 1] - x_array[i])
 
+#Returns the coordinates vector of the interpolated points
 def interpolation_result(x, x_array, y_array, n, y_sec, i):
     if (i == n - 1):
         return y_array[n - 1]
@@ -69,6 +74,7 @@ def interpolation_result(x, x_array, y_array, n, y_sec, i):
     inter_x = inter_x + ((k**2)/6) * (z**3 - z) * y_sec[i + 1]
     return inter_x
 
+#Proceeds to interpolate the two curves from their coordinates
 def interpolation(x_array, y_array):
     n = x_array.size
     A = create_matrix_A(x_array, n)
