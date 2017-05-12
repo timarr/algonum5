@@ -39,14 +39,15 @@ def display_slices(ex, f_lambdas, ix, g_lambdas, n):
         plot_funct(ix, g, n)
     plt.show()
 
+
     
 (dim, ex,ey,ix,iy) = ld.load_foil("airfoils/b29root.dat")
-#display(ex, ey, ix, iy)
+display(ex, ey, ix, iy)
 
 number_points = 10
 f = inter.interpolation(ex, ey)
 g = inter.interpolation(ix, iy)
-#display_interpole(ex, f, ix, g, number_points)
+display_interpole(ex, f, ix, g, number_points)
 
 n_curves = 10
 h_max_e = curves.find_farrest_point(ey)
