@@ -31,7 +31,7 @@ def plot_funct(x, f_x, n):
 def display_interpole(ex, f_ex, ix, f_ix, n):
     plot_funct(ex, f_ex, n)
     plot_funct(ix, f_ix, n)
-    plt.title("Courbes interpolees (methode 1)")
+    plt.title("Courbes interpolees (tri-diagonale matrice methode)")
     plt.show()
     
 	
@@ -42,17 +42,19 @@ def display_slices(ex, f_lambdas, ix, g_lambdas, n):
         
     for g in g_lambdas:
         plot_funct(ix, g, n)
+    plt.title("Courbes représentant la modification d'un courant d'air par l'aile")
     plt.show()
 
+try:
+    number_points=int(input('Entrez un nombre de points avec lequel vous voulez interpoler :'))
+except ValueError:
+    print ("Ceci n'est pas un nombre !")
 
+    
 print("Courbes originales decrivant la forme de l'aile du b-29")
 (dim, ex,ey,ix,iy) = ld.load_foil("airfoils/b29root.dat")
 display(ex, ey, ix, iy)
 
-try:
-    number_points=int(raw_input('Entrez un nombre de points avec lequel vous voulez interpoler :'))
-except ValueError:
-    print "Ceci n'est pas un nombre !"
     
 f = inter.interpolation(ex, ey)
 g = inter.interpolation(ix, iy)
@@ -70,7 +72,7 @@ splinval = lagrange.spline(ix, iy, len(ix), iy[0], iy[-1])
 for i in range(len(x)):
 	y.append(lagrange.splint(ix, iy, splinval, len(ex), x[i]))
 plt.plot(x, y,'r')
-plt.title("Courbes interpolees (methode 2)")
+plt.title("Courbes interpolees (methode de Lagrange)")
 plt.show()
 
 
@@ -81,4 +83,4 @@ h_max_e = curves.find_farrest_point(ey)
 h_max_i = curves.find_farrest_point(iy)
 f_lambdas = curves.create_curves(f, n_curves, h_max_e)
 g_lambdas = curves.create_curves(g, n_curves, h_max_i)
-#display_slices(ex, f_lambdas, ix, g_lambdas, number_points)
+display_slices(ex, f_lambdas, ix, g_lambdas, number_points)
