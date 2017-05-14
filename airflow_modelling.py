@@ -48,8 +48,9 @@ def creating_pressure_map(image, functions, x_array, y_min, y_max, poly_n, up):
         functions_n = len(functions)
         for i in range(0, functions_n, 1):
                 #length of the wing
-                f = it.interpolation_derivative(x_array , function_to_array(functions[i], x_array))
-                length = it.pt_middle_method(f, poly_n, x_min, x_max)
+                g = it.interpolation_derivative(x_array , function_to_array(functions[i], x_array))
+                f = (lambda x:np.sqrt(1+g(x)**2))
+                length = it.rectangle_method(f, poly_n, x_min, x_max)
                 dynamic_pressure = (air_density / 2) * (length**2)
                 #pressure apply by the airflow
                 pressure = dynamic_pressure 
