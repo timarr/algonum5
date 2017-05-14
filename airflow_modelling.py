@@ -1,4 +1,6 @@
 import numpy as np
+import scipy.integrate as sc
+import scipy.misc as sm
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import matplotlib.image as img
@@ -18,6 +20,14 @@ def function_to_array(f, x_array):
                 np.append(y_array, f(i))
         return y_array
 
+def function_to_derivative(f, x_array):
+        h = (x_array[x_array.size - 1] - x_array[0])/x_array.size
+        y_array = np.empty(x_array.size)
+        for i in x_array:
+                y = sm.derivative(f, i, dx=h)
+                np.append(y_array, y)
+        return y_array
+                
 
 #color the image between two functions (function_min and function_max)
 def coloring_image_part(image, function_min, function_max, x_min, x_max, y_min, value):
@@ -30,8 +40,9 @@ def coloring_image_part(image, function_min, function_max, x_min, x_max, y_min, 
                 while j < max:
                         index_y = np.floor((j-y_min)/accuracy_y)
                         value = np.floor(value)
+                        print(value)
                         #color the image
-                        image[index_y][index_x] = [value,value,value]
+                        image[index_y][index_x] = [value, value, value]
                         j = j + accuracy_y
                 i = i + accuracy_x
 
@@ -47,11 +58,19 @@ def creating_pressure_map(image, functions, x_array, y_min, y_max, poly_n, up):
         functions_n = len(functions)
         for i in range(0, functions_n, 1):
                 #length of the wing
-                f = it.interpolation_derivative(x_array , function_to_array(functions[i], x_array))
-                length = it.Romberg_method(f, x_min, x_max, poly_n)
+                #f = it.interpolation_derivative(x_array , function_to_array(functions[i], x_array))
+                #length = it.rectangle_method(f, poly_n, x_min, x_max)
+                f = function_to_derivative(functions[i], x_array)
+                f_prim = sp.interpolation(x_array, f)
+                g = (lambda x: np.sqrt(1 + f_prim(x)**2))
+                length,y = sc.quad(g, x_min, x_max)
                 dynamic_pressure = (air_density / 2) * (length**2)
+                print(i)
+                print(length)
+                print(dynamic_pressure)
+                print("--------")
                 #pressure apply by the airflow
-                pressure = dynamic_pressure 
+                pressure = dynamic_pressure
                 if i == functions_n - 1:
                         #color the extremities of the image.
                         if up:
@@ -87,7 +106,6 @@ def pressure_mapping(input, pitch = 0.01):
         #value the farest of the center.
         h_max = np.max(ey)
         h_min= np.min(iy)
-
         #interpolation function of the wing
         f_up = sp.interpolation(ex,ey)
         

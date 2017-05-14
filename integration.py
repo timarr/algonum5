@@ -12,7 +12,7 @@ def interpolation_derivative_result(x, x_array, y_array, n, y_sec, i):
 
     inter_dx = (y_array[i + 1] - y_array[i])/k
     inter_dx = inter_dx + (k * y_sec[i] / 6) * (3 * (1 - z)**2 + 1)
-    inter_dx = inter_dx + (k * y_sec[i+1] / 6) * (3 * z**2 - 1)
+    inter_dx = inter_dx + (k2 * y_sec[i+1] / 6) * (3 * z**2 - 1)
     return inter_dx
 
 #Function which give the derivative of the interpolation 
@@ -108,42 +108,37 @@ def lambda_Legendre(r):
 def lambda_Legendre_der(r):
     return (lambda x: Legendre_der(r, x))
 
+#Returns the factorial of x
+def fact(x):
+    result = 1
+    while (x>1) :
+        result=result*x
+        x=x-1
+    return result
+
+
 #Returns the coefficient of the i nth Legendre polynomial
-def coefficient_Legendre(i):
-    if (i == 0):
-        return (np.array([1]))
+def coefficient_Legendre(n):
+    fin = n
+    c = 1 / 2**n
+    if (n%2 != 0):
+        fin = n
+        coef = np.zeros(n+1)
+    else :
+        coef = np.zeros(n+1)
     
-    if (i == 1):
-        return np.array([1, 0])
-
-    if (i == 2):
-        return np.array([3/2, 0, -1/2])
-
-    if (i == 3):
-        return np.array([5/2, 0, -3/2, 0])
-
-    if (i == 4):
-        return np.array([35/8, 0, -30/8, 0, 3/8])
-
-    if (i == 5):
-        return np.array([63/8, 0, -70/8, 0, 15/8, 0])
-
-    if (i == 6):
-        return np.array([231/16, 0, -315/16, 0, 105/16, 0, -5/16])
-
-    if (i == 7):
-        return np.array([429/16, 0, -693/16, 0, 315/16, 0, -35/16, 0])
+    for i in range (fin // 2 + 1):
     
-    if (i == 8):
-        return np.array([6435/128, 0, -12012/128, 0, 6930/128, 0, -1260/128, 0, 35/128])
+        f1 = fact(2*n - 2*i)
+        f2 = fact(i)
+        f3 = fact(n-i)
+        f4 = fact(n - 2*i)
+        f = ((-1)**i * f1) / (f2 * f3 * f4)
+        coef[2*i] = c * f
+        
+    return (coef)
 
-    if (i == 9):
-        return np.array([12155/128, 0, -25740/128, 0, 18018/128, 0, -4620/128, 0, 315/128, 0])
-
-    if (i == 10):
-        return np.array([46189/256, 0, -109395/256, 0, 90090/256, 0, -30030/256, 0, 3465/256, 0, -63/256])
-
-
+    
 #Returns the weight list of each terms of a polynomial 
 def weight_legendre(r, n):
     lld = lambda_Legendre_der(n)

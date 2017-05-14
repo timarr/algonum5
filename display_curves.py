@@ -42,7 +42,7 @@ def display_slices(ex, f_lambdas, ix, g_lambdas, n):
         
     for g in g_lambdas:
         plot_funct(ix, g, n)
-    plt.title("Courbes représentant la modification d'un courant d'air par l'aile")
+    plt.title("Courbes representant la modification d'un courant d'air par l'aile")
     plt.show()
 
 try:
@@ -81,6 +81,7 @@ plt.show()
 n_curves = 10
 h_max_e = curves.find_farrest_point(ey)
 h_max_i = curves.find_farrest_point(iy)
+
 f_lambdas = curves.create_curves(f, n_curves, h_max_e)
 g_lambdas = curves.create_curves(g, n_curves, h_max_i)
 display_slices(ex, f_lambdas, ix, g_lambdas, number_points)
