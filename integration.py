@@ -12,7 +12,7 @@ def interpolation_derivative_result(x, x_array, y_array, n, y_sec, i):
 
     inter_dx = (y_array[i + 1] - y_array[i])/k
     inter_dx = inter_dx + (k * y_sec[i] / 6) * (3 * (1 - z)**2 + 1)
-    inter_dx = inter_dx + (k2 * y_sec[i+1] / 6) * (3 * z**2 - 1)
+    inter_dx = inter_dx + (k * y_sec[i+1] / 6) * (3 * z**2 - 1)
     return inter_dx
 
 #Function which give the derivative of the interpolation 
