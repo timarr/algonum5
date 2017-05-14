@@ -10,6 +10,7 @@ import interpolation_lagrange as lagrange
 def display(ex, ey, ix, iy):
     plt.plot(ex, ey, linewidth = 1.0)
     plt.plot(ix, iy, linewidth = 1.0)
+    plt.title("Courbes originales decrivant la forme de l'aile du b-29")
     plt.show()
 
 #Generates the plot x->f(x)
@@ -30,6 +31,7 @@ def plot_funct(x, f_x, n):
 def display_interpole(ex, f_ex, ix, f_ix, n):
     plot_funct(ex, f_ex, n)
     plot_funct(ix, f_ix, n)
+    plt.title("Courbes interpolees (methode 1)")
     plt.show()
     
 	
@@ -43,17 +45,22 @@ def display_slices(ex, f_lambdas, ix, g_lambdas, n):
     plt.show()
 
 
+print("Courbes originales decrivant la forme de l'aile du b-29")
 (dim, ex,ey,ix,iy) = ld.load_foil("airfoils/b29root.dat")
 display(ex, ey, ix, iy)
 
-number_points = 100
+try:
+    number_points=int(raw_input('Entrez un nombre de points avec lequel vous voulez interpoler :'))
+except ValueError:
+    print "Ceci n'est pas un nombre !"
+    
 f = inter.interpolation(ex, ey)
 g = inter.interpolation(ix, iy)
-#display_interpole(ex, f, ix, g, number_points)
+display_interpole(ex, f, ix, g, number_points)
 
 
-x= np.linspace(0, 1, number_points)
-y= []
+x = np.linspace(0, 1, number_points)
+y = []
 splinval = lagrange.spline(ex, ey, len(ex), ey[0], ey[-1])
 for i in range(len(x)):
 	y.append(lagrange.splint(ex, ey, splinval, len(ex), x[i]))
@@ -63,6 +70,7 @@ splinval = lagrange.spline(ix, iy, len(ix), iy[0], iy[-1])
 for i in range(len(x)):
 	y.append(lagrange.splint(ix, iy, splinval, len(ex), x[i]))
 plt.plot(x, y,'r')
+plt.title("Courbes interpolees (methode 2)")
 plt.show()
 
 
