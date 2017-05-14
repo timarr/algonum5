@@ -1,88 +1,113 @@
 import numpy as np
-import pylab as pl
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+import matplotlib.image as img
 import interpolation as sp
 import integration as it
 import curves
 from load_foil import load_foil
 
-def f_lambda(f, x, h):
-	# Returns the function f_lambda, with h = hmin or hmax
-	return lambda x: (1 - x) * f(x) + 3 * x * h
+accuracy_x = 0.01
+accuracy_y = 0.01
+static_pressure = 1
+air_density = 1.225
 
-def show_colored(f, a, b, colour = (0,0,1), width = 4):
-	# Create the graph of a function f on the interval [a,b], in color"
-	v = []
-	fv = []
-	steps = 256.
-	for i in np.arange(a, b + (b - a)/steps, (b - a)/steps):
-		fv.append(f(i))
-	pl.plot(np.arange(a, b + (b - a)/steps, (b - a)/steps), fv, color = colour, linewidth = width)
+def function_to_array(f, x_array):
+        y_array = np.empty(x_array.size)
+        for i in x_array:
+                np.append(y_array, f(i))
+        return y_array
 
-def get_color(Pmin, Pmax, P):
-	# For a given pressure, gives the right color to use"
-	color = ((1,1,1), (1,1,0), (1,204/255.,102/255.), (1,153/255.,0), (1,0,0), (204/255.,0,0), (153/255.,0,0), (102/255.,0,0), (51/255.,0,0), (0,0,0))
-	pitch = (Pmax**2 - Pmin**2) / 100 # 100 = square of the number of colors
-	P = P**2 - Pmin**2
 
-	if (0<=P<=pitch):
-		return color[9]
-	elif (pitch < P <= 2* pitch):
-		return color[8]
-	elif (2 * pitch < P <= 3* pitch):
-		return color[7]
-	elif (3 * pitch < P <= 4* pitch):
-		return color[6]
-	elif (4 * pitch < P <= 5 * pitch):
-		return color[5]
-	elif (5* pitch < P <= 6 * pitch):
-		return color[4]
-	elif (6 * pitch < P <= 7 * pitch):
-		return color[3]
-	elif (7 * pitch < P <= 8 * pitch):
-		return color[2]
-	elif (8 * pitch < P <= 9 * pitch):
-		return color[1]
-	else:
-		return color[0]
+#color the image between two functions (function_min and function_max)
+def coloring_image_part(image, function_min, function_max, x_min, x_max, y_min, value):
+        i = x_min
+        while i < x_max:
+                #find the index corresponding to this part of the image (accuracy_x/2 is used to be a the center of the "case")
+                index_x = np.floor((i-x_min+(accuracy_x/2))/accuracy_x)
+                max = function_max(i)
+                j = function_min(i)
+                while j < max:
+                        index_y = np.floor((j-y_min)/accuracy_y)
+                        value = np.floor(value)
+                        print(value)
+                        #color the image
+                        image[index_y][index_x] = [value,value,value]
+                        j = j + accuracy_y
+                i = i + accuracy_x
+
+#calculate the value of pressure and color the upper or lower part of the image.
+def creating_pressure_map(image, functions, x_array, y_min, y_max, poly_n, up):
+        x_min = x_array[0]
+        x_max = x_array[x_array.size - 1]
+        #inside the wing
+        y_zero = (lambda x: 0)
+        coloring_image_part(image, y_zero, functions[0], x_min, x_max, y_min, 0)
+
+        #number of functions
+        functions_n = len(functions)
+        for i in range(0, functions_n, 1):
+                #length of the wing
+                f = it.interpolation_derivative(x_array , function_to_array(functions[i], x_array))
+                length = it.pt_middle_method(f, poly_n, x_min, x_max)
+                dynamic_pressure = (air_density / 2) * (length**2)
+                #pressure apply by the airflow
+                pressure = dynamic_pressure 
+                if i == functions_n - 1:
+                        #color the extremities of the image.
+                        if up:
+                                y_max_f = (lambda x: y_max)
+                                coloring_image_part(image, functions[i], y_max_f, x_min, x_max, y_min, pressure)
+                        else:
+                                y_min_f = (lambda x: y_min)
+                                coloring_image_part(image, y_min_f, functions[i], x_min, x_max, y_min, pressure)
+                else:
+                        if up:
+                                function_min = functions[i]
+                                function_max = functions[i + 1]
+                        else:
+                                function_min = functions[i + 1]
+                                function_max = functions[i]
+
+                        coloring_image_part(image, function_min, function_max, x_min, x_max, y_min, pressure)
+
+#create the two sides of the image.
+def create_image(airflow_up, airflow_up_n, airflow_down, airflow_down_n, x_array, y_min, y_max): 
+        #size of the image
+        x_n = np.floor((x_array[x_array.size - 1] - x_array[0]) / accuracy_x)
+        y_n = np.ceil((y_max - y_min) / accuracy_y)
+        #image of RGB (3)
+        image = np.zeros([y_n, x_n, 3], dtype=np.uint8)
+        creating_pressure_map(image, airflow_up, x_array, y_min, y_max, airflow_up_n, 1)
+        creating_pressure_map(image, airflow_down, x_array, y_min, 0, airflow_down_n, 0)
+        return image
 
 def pressure_mapping(input, pitch = 0.01):
 	# Maps the pressure around a wing given by input (a .dat file)"
-	pl.clf()
-	(dim, ex, ey, ix, iy) = load_foil(input) # Outside function
-	h_max = np.max(ey)
-	h_min = np.min(iy)
+        (dim, ex, ey, ix, iy) = load_foil(input)
+        #value the farest of the center.
+        h_max = np.max(ey)
+        h_min= np.min(iy)
 
-	f_up = sp.interpolation(ex,ey) # Outside function
-	f_low = sp.interpolation(ix,iy) # Outside function
+        #interpolation function of the wing
+        f_up = sp.interpolation(ex,ey)
+        
+        f_low = sp.interpolation(ix,iy)
 
-	n_curves = 10
-	
-	f_up_lambdas = curves.create_curves(f_up, n_curves, h_max)
-	f_low_lambdas = curves.create_curves(f_low, n_curves, h_min)
-	
-	precision_length = np.arange(0,1,0.01)
+        n_curves = 10
 
-	Pmax = it.Gauss_Legendre(f_up, 10, ex[0], ex[ex.size - 1])
-	Pmin = it.Gauss_Legendre(f_low, 10, ix[0], ix[ix.size - 1])
-	#Pmax = it.length(sp.interpolation(ex,ey),0.,1.,100) # Two outside functions
-	#Pmin = it.length(sp.interpolation(np.arange(0,1,0.01), map(f_lambda(fup,1,hmax),precision_length)), 0., 1., 100) # Three outside functions
-	#for i in np.arange(1e-2 , 2 , pitch): # over the extrados, 1e-2 is to avoid superposition of the wing and the pressure
-		#f = f_lambda(f_up , i  ,h_max)
-	for f in f_up_lambdas: 
-		v = it.Gauss_Legendre(f, 10, ex[0], ex[ex.size - 1])
-		#v = it.Gauss_Legendre(sp.interpolation(np.arange(0,1,0.01), map(f,precision_length)) ,0.,1.,100)
-		show_colored(f , ex[0],ex[ex.size - 1], get_color(Pmin, Pmax, v**2))
-		#for i in np.arange(1e-2, 1 , pitch): # under the intrados
-	#f = f_lambda(f_low , i ,h_min)
-	for f in f_low _lambdas:
-		v = it.Gauss_Legendre(f, 10, ix[0], ix[ix.size - 1])		
-		#v = it.Gauss_Legendre(sp.interpolation(np.arange(0,1,0.01), map(f,np.arange(0,1,0.01))) ,0.,1.,100)
-		show_colored(f, ix[0], ix[ix.size - 1], get_color(Pmin,Pmax, v**2))
+        #airflow above the wing
+        f_up_lambdas = curves.create_curves(f_up, n_curves, h_max)
 
-	show_colored(f_up, ex[0], ex[len(ex) - 1],'g',2)
-	show_colored(f_low, ix[0], ix[len(ix) -1],'g',2)
+        #airflow below the wing
+        f_low_lambdas = curves.create_curves(f_low, n_curves, h_min)
 
-	print("Pressure mapping done")
-	pl.show()
-
+        #creation of the simulation of the airflow on the wing
+        image = create_image(f_up_lambdas, ex.size - 1, f_low_lambdas, ix.size - 1, ex, 3*h_min, 3*h_max)
+        lum_imge = image[:,:,0]
+        my_cmap = plt.cm.get_cmap('hot')
+        display = plt.imshow(lum_imge, cmap=my_cmap, vmin = 0, vmax = 255, interpolation='nearest' ,origin='lower')
+        print("Pressure mapping done")
+        plt.show()
+        
 pressure_mapping("airfoils/b29root.dat")

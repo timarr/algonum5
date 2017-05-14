@@ -21,7 +21,7 @@ def interpolation_derivative(x_array, y_array):
     A = inter.create_matrix_A(x_array, n)
     B = inter.create_matrix_B(x_array, y_array, n)
     y_sec = inter.solve_linear_equations(A, B, n - 2)
-    f = (lambda x: np.sqrt(1+ interpolation_derivee_result(x, x_array, y_array, n, y_sec, inter.dichotomic_search(x, x_array, 0, n))**2))
+    f = (lambda x: np.sqrt(1+ interpolation_derivative_result(x, x_array, y_array, n, y_sec, inter.dichotomic_search(x, x_array, 0, n))**2))
     return f
 
 #------------------------------------------------------------------

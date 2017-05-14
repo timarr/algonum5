@@ -2,7 +2,7 @@ import numpy as np
 
 
 
-#Computes the matrix of the coordinates of the points of the first curve describing the plane's wing
+#Creation of a matrix tri-diagonal to find the seconde derivative of y with the equation Ax =B
 def create_matrix_A (x_array, n):
     n = x_array.size
     A = np.zeros((n - 2, n - 2))
@@ -17,7 +17,7 @@ def create_matrix_A (x_array, n):
     A[n - 3][n - 3] = k[n - 3] + k[n - 2]
     return A
 
-#Same as before, for the second curve        
+#Vector to find seconde derivative : "B" in the equation Ax=B       
 def create_matrix_B (x_array, y_array, n):
     B = np.empty(n - 2) 
 
@@ -30,7 +30,7 @@ def create_matrix_B (x_array, y_array, n):
 
     return B
 
-#
+#the tri-linear algorithm
 def solve_linear_equations(A, B, n):
     y_sec = np.empty(n + 2)
     y_sec[0] = 0
@@ -59,11 +59,11 @@ def dichotomic_search (x, x_array, start, end):
     else:
         return index
 
-#Returns zeta(x)
+#shortcut in order to make easier the next function
 def zeta(x, x_array, i):
     return (x - x_array[i])/(x_array[i + 1] - x_array[i])
 
-#Returns the coordinates vector of the interpolated points and returns the lambda that associates the interpolate x to each x
+#Returns the result of the interpolation equation with a x given.
 def interpolation_result(x, x_array, y_array, n, y_sec, i):
     if (i == n - 1):
         return y_array[n - 1]
@@ -76,7 +76,7 @@ def interpolation_result(x, x_array, y_array, n, y_sec, i):
     inter_x = inter_x + ((k**2)/6) * (z**3 - z) * y_sec[i + 1]
     return inter_x
 
-#Proceeds to interpolate the two curves from their coordinates
+#Proceeds to return a lambda expression which is the interpolation function
 def interpolation(x_array, y_array):
     n = x_array.size
     A = create_matrix_A(x_array, n)

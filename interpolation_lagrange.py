@@ -9,7 +9,7 @@ from scipy import interpolate
 def spline(x, y, n, yp1, ypn):
     u = np.zeros((1, n))
     i = 2
-    y2 = np.zeros((1, n)) #Will contain que derivatives of the points
+    y2 = np.zeros((1, n)) #Will contain the derivatives of the points
     if (yp1 > 0.99e30):
         u[0][0] = 0
         y2[0][0] = 0.0
