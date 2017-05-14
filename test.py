@@ -42,21 +42,31 @@ def display_slices(ex, f_lambdas, ix, g_lambdas, n):
         plot_funct(ix, g, n)
     plt.show()
 
+
 (dim, ex,ey,ix,iy) = ld.load_foil("airfoils/b29root.dat")
 display(ex, ey, ix, iy)
 
-number_points = 10
+number_points = 100
 f = inter.interpolation(ex, ey)
 g = inter.interpolation(ix, iy)
 #display_interpole(ex, f, ix, g, number_points)
 
-data1=zip(ex,ey) #used to build the tuple[(x1,f(x1)),(x2,f(x2)),...)] - curve 1
-data2=zip(ix,iy) #same with curve 2
-f = lagrange.lagrange_step(data1, ex)
-g = lagrange.lagrange_step(data2, ix)
-print(f) #lambda
-print(g) #lambda
-display_interpole(ex, f, ix, g, number_points)
+
+x= np.linspace(0, 1, number_points)
+y= []
+splinval = lagrange.spline(ex, ey, len(ex), ey[0], ey[-1])
+for i in range(len(x)):
+	y.append(lagrange.splint(ex, ey, splinval, len(ex), x[i]))
+plt.plot(x, y,'b')
+y = []
+splinval = lagrange.spline(ix, iy, len(ix), iy[0], iy[-1])
+for i in range(len(x)):
+	y.append(lagrange.splint(ix, iy, splinval, len(ex), x[i]))
+plt.plot(x, y,'r')
+plt.show()
+
+
+
 
 n_curves = 10
 h_max_e = curves.find_farrest_point(ey)
