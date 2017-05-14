@@ -39,8 +39,7 @@ def coloring_image_part(image, function_min, function_max, x_min, x_max, y_min, 
                 j = function_min(i)
                 while j < max:
                         index_y = np.floor((j-y_min)/accuracy_y)
-                        value = np.floor(value)
-                        print(value)
+                        value = np.ceil(value)
                         #color the image
                         image[index_y][index_x] = [value, value, value]
                         j = j + accuracy_y
@@ -63,7 +62,7 @@ def creating_pressure_map(image, functions, x_array, y_min, y_max, poly_n, up):
                 f = function_to_derivative(functions[i], x_array)
                 f_prim = sp.interpolation(x_array, f)
                 g = (lambda x: np.sqrt(1 + f_prim(x)**2))
-                length,y = sc.quad(g, x_min, x_max)
+                length = it.Gauss_Legendre(g, x_array.size, x_min, x_max)
                 dynamic_pressure = (air_density / 2) * (length**2)
                 print(i)
                 print(length)
@@ -87,7 +86,7 @@ def creating_pressure_map(image, functions, x_array, y_min, y_max, poly_n, up):
                                 function_min = functions[i + 1]
                                 function_max = functions[i]
 
-                        coloring_image_part(image, function_min, function_max, x_min, x_max, y_min, pressure)
+                        coloring_image_part(image, function_min, function_max, x_min, x_max, y_min, length)
 
 #create the two sides of the image.
 def create_image(airflow_up, airflow_up_n, airflow_down, airflow_down_n, x_array, y_min, y_max): 
