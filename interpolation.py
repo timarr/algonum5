@@ -1,5 +1,7 @@
 import numpy as np
 
+
+
 #Computes the matrix of the coordinates of the points of the first curve describing the plane's wing
 def create_matrix_A (x_array, n):
     n = x_array.size
@@ -61,7 +63,7 @@ def dichotomic_search (x, x_array, start, end):
 def zeta(x, x_array, i):
     return (x - x_array[i])/(x_array[i + 1] - x_array[i])
 
-#Returns the coordinates vector of the interpolated points
+#Returns the coordinates vector of the interpolated points and returns the lambda that associates the interpolate x to each x
 def interpolation_result(x, x_array, y_array, n, y_sec, i):
     if (i == n - 1):
         return y_array[n - 1]
