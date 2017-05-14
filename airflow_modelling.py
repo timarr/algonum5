@@ -9,8 +9,8 @@ import integration as it
 import curves
 from load_foil import load_foil
 
-accuracy_x = 0.01
-accuracy_y = 0.01
+accuracy_x = 0.001
+accuracy_y = 0.001
 static_pressure = 1
 air_density = 1.225
 
@@ -23,6 +23,7 @@ def function_to_array(f, x_array):
 def function_to_derivative(f, x_array):
         h = (x_array[x_array.size - 1] - x_array[0])/x_array.size
         y_array = np.empty(x_array.size)
+        print("derivative")
         for i in x_array:
                 y = sm.derivative(f, i, dx=h)
                 np.append(y_array, y)
@@ -39,9 +40,10 @@ def coloring_image_part(image, function_min, function_max, x_min, x_max, y_min, 
                 j = function_min(i)
                 while j < max:
                         index_y = np.floor((j-y_min)/accuracy_y)
-                        value = np.ceil(value)
+                        print(value)
+                        value_i = np.floor(value)
                         #color the image
-                        image[index_y][index_x] = [value, value, value]
+                        image[index_y][index_x] = [value_i, value_i, value_i]
                         j = j + accuracy_y
                 i = i + accuracy_x
 
@@ -61,7 +63,7 @@ def creating_pressure_map(image, functions, x_array, y_min, y_max, poly_n, up):
                 #length = it.rectangle_method(f, poly_n, x_min, x_max)
                 f = function_to_derivative(functions[i], x_array)
                 f_prim = sp.interpolation(x_array, f)
-                g = (lambda x: np.sqrt(1 + f_prim(x)**2))
+                g = (lambda x: np.sqrt(1 + pow(f_prim(x),2)))
                 length = it.Gauss_Legendre(g, x_array.size, x_min, x_max)
                 dynamic_pressure = (air_density / 2) * (length**2)
                 print(i)
