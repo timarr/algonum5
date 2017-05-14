@@ -30,7 +30,6 @@ def coloring_image_part(image, function_min, function_max, x_min, x_max, y_min, 
                 while j < max:
                         index_y = np.floor((j-y_min)/accuracy_y)
                         value = np.floor(value)
-                        print(value)
                         #color the image
                         image[index_y][index_x] = [value,value,value]
                         j = j + accuracy_y
@@ -48,9 +47,8 @@ def creating_pressure_map(image, functions, x_array, y_min, y_max, poly_n, up):
         functions_n = len(functions)
         for i in range(0, functions_n, 1):
                 #length of the wing
-                g = it.interpolation_derivative(x_array , function_to_array(functions[i], x_array))
-                f = (lambda x:np.sqrt(1+g(x)**2))
-                length = it.rectangle_method(f, poly_n, x_min, x_max)
+                f = it.interpolation_derivative(x_array , function_to_array(functions[i], x_array))
+                length = it.Romberg_method(f, x_min, x_max, poly_n)
                 dynamic_pressure = (air_density / 2) * (length**2)
                 #pressure apply by the airflow
                 pressure = dynamic_pressure 
@@ -104,7 +102,7 @@ def pressure_mapping(input, pitch = 0.01):
         f_low_lambdas = curves.create_curves(f_low, n_curves, h_min)
 
         #creation of the simulation of the airflow on the wing
-        image = create_image(f_up_lambdas, ex.size - 1, f_low_lambdas, ix.size - 1, ex, 3*h_min, 3*h_max)
+        image = create_image(f_up_lambdas, 10, f_low_lambdas, 10, ex, 3*h_min, 3*h_max)
         lum_imge = image[:,:,0]
         my_cmap = plt.cm.get_cmap('hot')
         display = plt.imshow(lum_imge, cmap=my_cmap, vmin = 0, vmax = 255, interpolation='nearest' ,origin='lower')
