@@ -48,7 +48,6 @@ def compute_pressures(pressures, functions, x_array, y_min, y_max, up, index_sta
 
 		pressure = (air_density / 2) * (length**2)
 		pressures[i + index_start] = pressure
-		print(i + index_start)
 
 #find the min and max of the pressures
 def find_min_max_pressure(pressures):
@@ -108,7 +107,6 @@ def create_image(airflow_up, airflow_up_n, airflow_down, airflow_down_n, x_array
 
 	(min_pressure, max_pressure) = find_min_max_pressure(pressures)
 	
-	print(min_pressure, max_pressure)
 	#create the image.
 	creating_pressure_map(image, airflow_up, x_array, y_min, y_max, 1, pressures, min_pressure, max_pressure, 0)
 	creating_pressure_map(image, airflow_down, x_array, y_min, 0, 0, pressures, min_pressure, max_pressure, airflow_up_n)
