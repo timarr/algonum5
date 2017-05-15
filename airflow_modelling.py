@@ -49,42 +49,40 @@ def coloring_image_part(image, function_min, function_max, x_min, x_max, y_min, 
                         j = j + accuracy_y
                 i = i + accuracy_x
 
-#calculate the value of pressure and color the upper or lower part of the image.
-def creating_pressure_map(image, functions, x_array, y_min, y_max, poly_n, up):
+def find_pressures(pressures, functions, x_array, y_min, y_max, poly_n, up, index_start):
         x_min = x_array[0]
         x_max = x_array[x_array.size - 1]
 
         #number of functions
         functions_n = len(functions)
-        pressures = np.zeros(functions_n)
-        max_pressure = 0
-        min_pressure = 0
         for i in range(0, functions_n, 1):
                 #length of the wing
                 f = it.interpolation_derivative(x_array , function_to_array(functions[i], x_array))
                 f_prim = f
                 g = (lambda x: np.sqrt(1 + pow(f_prim(x),2)))
                 length = it.Gauss_Legendre(g, x_array.size, x_min, x_max)
-                dynamic_pressure = (air_density / 2) * (length**2)
-
+                pressure = (air_density / 2) * (length**2)
                 #pressure apply by the airflow
-                pressures[i] = dynamic_pressure
-                if up:
-                        pressures[i] = pressures[i] + static_pressure
-
-                if i == 0:
-                        max_pressure = pressures[i]
-                        min_pressure = pressures[i]
-                if pressures[i] > max_pressure:
-                   max_pressure = pressures[i]
-                if pressures[i] < min_pressure:
-                   min_pressure = pressures[i]
-
+                pressures[i + index_start] = pressure
+        
+#calculate the value of pressure and color the upper or lower part of the image.
+def creating_pressure_map(image, functions, x_array, y_min, y_max, poly_n, up, pressures, index_start):
+        x_min = x_array[0]
+        x_max = x_array[x_array.size - 1]
+        
+        min_pressure = pressures[0]
+        max_pressure = pressures[0]
+        for pressure in pressures:
+                if pressure < min_pressure:
+                        min_pressure = pressure
+                if pressure > max_pressure:
+                        max_pressure = pressure
+                
         #inside the wing
         y_zero = (lambda x: 0)
         coloring_image_part(image, y_zero, functions[0], x_min, x_max, y_min, min_pressure, min_pressure, max_pressure)
 
-                        
+        functions_n = len(functions)                        
         for i in range(0, functions_n, 1): 
                 if i == functions_n - 1:
                         #color the extremities of the image.
@@ -102,7 +100,7 @@ def creating_pressure_map(image, functions, x_array, y_min, y_max, poly_n, up):
                                 function_min = functions[i + 1]
                                 function_max = functions[i]
 
-                        coloring_image_part(image, function_min, function_max, x_min, x_max, y_min, pressures[i], min_pressure, max_pressure)
+                        coloring_image_part(image, function_min, function_max, x_min, x_max, y_min, pressures[i + index_start], min_pressure, max_pressure)
 
 #create the two sides of the image.
 def create_image(airflow_up, airflow_up_n, airflow_down, airflow_down_n, x_array, y_min, y_max): 
@@ -111,8 +109,12 @@ def create_image(airflow_up, airflow_up_n, airflow_down, airflow_down_n, x_array
         y_n = np.ceil((y_max - y_min) / accuracy_y)
         #image of RGB (3)
         image = np.zeros([y_n, x_n, 3], dtype=np.uint8)
-        creating_pressure_map(image, airflow_up, x_array, y_min, y_max, airflow_up_n, 1)
-        creating_pressure_map(image, airflow_down, x_array, y_min, 0, airflow_down_n, 0)
+        pressures = np.zeros(airflow_up_n+airflow_down_n)
+        find_pressures(pressures, airflow_up, x_array, y_min, y_max, airflow_up_n, 1, 0)
+        find_pressures(pressures, airflow_down, x_array, y_min, y_max, airflow_down_n, 0, airflow_up_n)
+        
+        creating_pressure_map(image, airflow_up, x_array, y_min, y_max, airflow_up_n, 1, pressures, 0)
+        creating_pressure_map(image, airflow_down, x_array, y_min, 0, airflow_down_n, 0, pressures, airflow_up_n)
         return image
 
 def pressure_mapping(input, pitch = 0.01):
