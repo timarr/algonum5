@@ -15,23 +15,26 @@ static_pressure = 1
 air_density = 1.225
 
 def function_to_array(f, x_array):
-        y_array = np.empty(x_array.size)
+        y_array = np.zeros(x_array.size)
+        compt = 0
         for i in x_array:
-                np.append(y_array, f(i))
+                y_array[compt] = f(i)
+                compt = compt + 1
         return y_array
 
 def function_to_derivative(f, x_array):
         h = (x_array[x_array.size - 1] - x_array[0])/x_array.size
-        y_array = np.empty(x_array.size)
-        print("derivative")
+        y_array = np.zeros(x_array.size)
+        compt = 0
         for i in x_array:
                 y = sm.derivative(f, i, dx=h)
-                np.append(y_array, y)
+                y_array[compt] = y
+                compt = compt + 1
         return y_array
                 
 
 #color the image between two functions (function_min and function_max)
-def coloring_image_part(image, function_min, function_max, x_min, x_max, y_min, value):
+def coloring_image_part(image, function_min, function_max, x_min, x_max, y_min, value, min_value, max_value):
         i = x_min
         while i < x_max:
                 #find the index corresponding to this part of the image (accuracy_x/2 is used to be a the center of the "case")
@@ -40,8 +43,7 @@ def coloring_image_part(image, function_min, function_max, x_min, x_max, y_min, 
                 j = function_min(i)
                 while j < max:
                         index_y = np.floor((j-y_min)/accuracy_y)
-                        print(value)
-                        value_i = np.floor(value)
+                        value_i = np.floor((value-min_value)/(max_value-min_value)*255)
                         #color the image
                         image[index_y][index_x] = [value_i, value_i, value_i]
                         j = j + accuracy_y
@@ -51,35 +53,47 @@ def coloring_image_part(image, function_min, function_max, x_min, x_max, y_min, 
 def creating_pressure_map(image, functions, x_array, y_min, y_max, poly_n, up):
         x_min = x_array[0]
         x_max = x_array[x_array.size - 1]
-        #inside the wing
-        y_zero = (lambda x: 0)
-        coloring_image_part(image, y_zero, functions[0], x_min, x_max, y_min, 0)
 
         #number of functions
         functions_n = len(functions)
+        pressures = np.zeros(functions_n)
+        max_pressure = 0
+        min_pressure = 0
         for i in range(0, functions_n, 1):
                 #length of the wing
-                #f = it.interpolation_derivative(x_array , function_to_array(functions[i], x_array))
-                #length = it.rectangle_method(f, poly_n, x_min, x_max)
-                f = function_to_derivative(functions[i], x_array)
-                f_prim = sp.interpolation(x_array, f)
+                f = it.interpolation_derivative(x_array , function_to_array(functions[i], x_array))
+                f_prim = f
                 g = (lambda x: np.sqrt(1 + pow(f_prim(x),2)))
                 length = it.Gauss_Legendre(g, x_array.size, x_min, x_max)
                 dynamic_pressure = (air_density / 2) * (length**2)
-                print(i)
-                print(length)
-                print(dynamic_pressure)
-                print("--------")
+
                 #pressure apply by the airflow
-                pressure = dynamic_pressure
+                pressures[i] = dynamic_pressure
+                if up:
+                        pressures[i] = pressures[i] + static_pressure
+
+                if i == 0:
+                        max_pressure = pressures[i]
+                        min_pressure = pressures[i]
+                if pressures[i] > max_pressure:
+                   max_pressure = pressures[i]
+                if pressures[i] < min_pressure:
+                   min_pressure = pressures[i]
+
+        #inside the wing
+        y_zero = (lambda x: 0)
+        coloring_image_part(image, y_zero, functions[0], x_min, x_max, y_min, min_pressure, min_pressure, max_pressure)
+
+                        
+        for i in range(0, functions_n, 1): 
                 if i == functions_n - 1:
                         #color the extremities of the image.
                         if up:
                                 y_max_f = (lambda x: y_max)
-                                coloring_image_part(image, functions[i], y_max_f, x_min, x_max, y_min, pressure)
+                                coloring_image_part(image, functions[i], y_max_f, x_min, x_max, y_min, min_pressure, min_pressure, max_pressure)
                         else:
                                 y_min_f = (lambda x: y_min)
-                                coloring_image_part(image, y_min_f, functions[i], x_min, x_max, y_min, pressure)
+                                coloring_image_part(image, y_min_f, functions[i], x_min, x_max, y_min, min_pressure, min_pressure, max_pressure)
                 else:
                         if up:
                                 function_min = functions[i]
@@ -88,7 +102,7 @@ def creating_pressure_map(image, functions, x_array, y_min, y_max, poly_n, up):
                                 function_min = functions[i + 1]
                                 function_max = functions[i]
 
-                        coloring_image_part(image, function_min, function_max, x_min, x_max, y_min, length)
+                        coloring_image_part(image, function_min, function_max, x_min, x_max, y_min, pressures[i], min_pressure, max_pressure)
 
 #create the two sides of the image.
 def create_image(airflow_up, airflow_up_n, airflow_down, airflow_down_n, x_array, y_min, y_max): 
