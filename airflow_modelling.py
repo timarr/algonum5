@@ -45,9 +45,7 @@ def find_pressures(pressures, functions, x_array, y_min, y_max, poly_n, up, inde
         for i in range(0, functions_n, 1):
                 #length of the wing
                 f = it.interpolation_derivative(x_array , function_to_array(functions[i], x_array))
-                f_prim = f
-                g = (lambda x: np.sqrt(1 + pow(f_prim(x),2)))
-                length = it.Gauss_Legendre(g, x_array.size, x_min, x_max)
+                length = it.Gauss_Legendre(f, x_array.size, x_min, x_max)
                 pressure = (air_density / 2) * (length**2)
                 #pressure apply by the airflow
                 pressures[i + index_start] = pressure
