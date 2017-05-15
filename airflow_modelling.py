@@ -1,6 +1,4 @@
 import numpy as np
-import scipy.integrate as sc
-import scipy.misc as sm
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import matplotlib.image as img
@@ -14,35 +12,16 @@ accuracy_y = 0.001
 static_pressure = 1
 air_density = 1.225
 
-def function_to_array(f, x_array):
-        y_array = np.zeros(x_array.size)
-        compt = 0
-        for i in x_array:
-                y_array[compt] = f(i)
-                compt = compt + 1
-        return y_array
-
-def function_to_derivative(f, x_array):
-        h = (x_array[x_array.size - 1] - x_array[0])/x_array.size
-        y_array = np.zeros(x_array.size)
-        compt = 0
-        for i in x_array:
-                y = sm.derivative(f, i, dx=h)
-                y_array[compt] = y
-                compt = compt + 1
-        return y_array
-                
-
 #color the image between two functions (function_min and function_max)
 def coloring_image_part(image, function_min, function_max, x_min, x_max, y_min, value, min_value, max_value):
         i = x_min
         while i < x_max:
                 #find the index corresponding to this part of the image (accuracy_x/2 is used to be a the center of the "case")
-                index_x = np.floor((i-x_min+(accuracy_x/2))/accuracy_x)
+                index_x = int(np.floor((i-x_min+(accuracy_x/2))/accuracy_x))
                 max = function_max(i)
                 j = function_min(i)
                 while j < max:
-                        index_y = np.floor((j-y_min)/accuracy_y)
+                        index_y = int(np.floor((j-y_min)/accuracy_y))
                         value_i = np.floor((value-min_value)/(max_value-min_value)*255)
                         #color the image
                         image[index_y][index_x] = [value_i, value_i, value_i]
@@ -105,8 +84,8 @@ def creating_pressure_map(image, functions, x_array, y_min, y_max, poly_n, up, p
 #create the two sides of the image.
 def create_image(airflow_up, airflow_up_n, airflow_down, airflow_down_n, x_array, y_min, y_max): 
         #size of the image
-        x_n = np.floor((x_array[x_array.size - 1] - x_array[0]) / accuracy_x)
-        y_n = np.ceil((y_max - y_min) / accuracy_y)
+        x_n = int(np.floor((x_array[x_array.size - 1] - x_array[0]) / accuracy_x))
+        y_n = int(np.ceil((y_max - y_min) / accuracy_y))
         #image of RGB (3)
         image = np.zeros([y_n, x_n, 3], dtype=np.uint8)
         pressures = np.zeros(airflow_up_n+airflow_down_n)
