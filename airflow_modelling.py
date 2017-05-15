@@ -14,11 +14,11 @@ air_density = 1.225
 
 def function_to_array(f, x_array):
         y_array = np.zeros(x_array.size)
-	compt = 0
-      	for i in x_array:	
-		y_array[compt] = f(i)
-          	compt = compt + 1
-	return y_array
+        compt = 0
+        for i in x_array:	
+                y_array[compt] = f(i)
+                compt = compt + 1
+        return y_array
 
 #color the image between two functions (function_min and function_max)
 def coloring_image_part(image, function_min, function_max, x_min, x_max, y_min, value, min_value, max_value):
