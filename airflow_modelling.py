@@ -9,9 +9,9 @@ from load_foil import load_foil
 
 accuracy_x = 0.001
 accuracy_y = 0.001
-static_pressure = 1
 air_density = 1.225
 
+#take a function en return an array. The array contains f(x) for each value of x_array
 def function_to_array(f, x_array):
         y_array = np.empty(x_array.size)
         compt = 0
@@ -37,7 +37,7 @@ def coloring_image_part(image, function_min, function_max, x_min, x_max, y_min, 
 		i = i + accuracy_x
 		
 #calcule the pressure for all the functions given
-def compute_pressures(pressures, functions, x_array, y_min, y_max, up, index_start):
+def compute_pressures(pressures, functions, x_array, y_min, y_max, index_start):
 	x_min = x_array[0]
 	x_max = x_array[x_array.size - 1]
 
@@ -100,9 +100,9 @@ def create_image(airflow_up, airflow_up_n, airflow_down, airflow_down_n, x_array
 	
 	pressures = np.zeros(airflow_up_n + airflow_down_n)
 	
-	compute_pressures(pressures, airflow_up, x_array, y_min, y_max, 1, 0)
+	compute_pressures(pressures, airflow_up, x_array, y_min, y_max, 0)
 
-	compute_pressures(pressures, airflow_down, x_array, y_min, y_max, 0, airflow_up_n)
+	compute_pressures(pressures, airflow_down, x_array, y_min, y_max, airflow_up_n)
 
 
 	(min_pressure, max_pressure) = find_min_max_pressure(pressures)

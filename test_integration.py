@@ -30,8 +30,8 @@ def test_convergence(a, b, n):
     plt.plot(r, label='Romberg Method')
     plt.plot(g, label='Gauss-Legendre')
 
-    plt.title("Convergence of the different methods of integrals - Function square root  ")
     plt.legend()
+    print("Convergence of the different methods of integrals - Function square root  ")
     plt.show()
 
 
