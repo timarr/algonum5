@@ -1,7 +1,5 @@
 import numpy as np
 import interpolation as inter
-import load_foil as ld
-import matplotlib.pyplot as plt
 
 #Function which give the derivative
 def interpolation_derivative_result(x, x_array, y_array, n, y_sec, i):
